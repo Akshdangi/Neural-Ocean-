@@ -1,0 +1,7 @@
+{
+  "speciesModelMap": {
+    "Lates calcarifer": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/BarramundiFish/glTF-Binary/BarramundiFish.glb",
+    "Carassius auratus": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Goldfish/glTF-Binary/Goldfish.glb",
+    "Generic buoy": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/BoomBox/glTF-Binary/BoomBox.glb"
+  }
+}

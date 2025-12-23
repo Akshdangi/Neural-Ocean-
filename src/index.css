@@ -1,0 +1,83 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Cesium specific styles */
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+/* Force Cesium to be visible */
+.cesium-widget {
+  font-family: inherit !important;
+  width: 100% !important;
+  height: 100% !important;
+  background: #001122 !important;
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+.cesium-viewer {
+  font-family: inherit !important;
+  width: 100% !important;
+  height: 100% !important;
+  background: #001122 !important;
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+.cesium-viewer-cesiumWidgetContainer {
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: 0 !important;
+  overflow: hidden !important;
+  background: #001122 !important;
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+.cesium-widget-canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block !important;
+  background: #001122 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* Hide Cesium UI elements */
+.cesium-viewer-toolbar,
+.cesium-viewer-animationContainer,
+.cesium-viewer-bottomContainer,
+.cesium-viewer-timelineContainer,
+.cesium-viewer-fullscreenContainer,
+.cesium-viewer-vrContainer {
+  display: none !important;
+}
+
+.cesium-widget-credits {
+  display: none !important;
+}
+
+/* Additional canvas styling */
+canvas.cesium-widget-canvas {
+  background: #001122 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: block !important;
+  position: relative !important;
+  z-index: 1 !important;
+  min-height: 500px !important;
+}
+
+/* Ensure all Cesium elements are visible */
+.cesium-widget *, 
+.cesium-viewer *,
+canvas {
+  position: relative !important;
+  z-index: 1 !important;
+}
