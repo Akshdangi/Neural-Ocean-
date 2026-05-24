@@ -74,10 +74,9 @@ canvas.cesium-widget-canvas {
   min-height: 500px !important;
 }
 
-/* Ensure all Cesium elements are visible */
-.cesium-widget *, 
-.cesium-viewer *,
-canvas {
+/* Ensure Cesium canvas elements are visible */
+.cesium-widget canvas.cesium-widget-canvas,
+.cesium-viewer canvas.cesium-widget-canvas {
   position: relative !important;
   z-index: 1 !important;
 }

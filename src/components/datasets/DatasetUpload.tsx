@@ -79,30 +79,30 @@ function DatasetUpload() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl p-8"
+        className="bg-black/20 backdrop-blur-3xl border border-white/[0.05] border-t-white/[0.1] border-l-white/[0.1] rounded-[3rem] p-10 shadow-2xl"
       >
         <div
           {...getRootProps()}
-          className={`border-2 border-dashed rounded-xl p-12 text-center cursor-pointer transition-all duration-300 ${
+          className={`border-2 border-dashed rounded-[2rem] p-16 text-center cursor-pointer transition-all duration-500 ${
             isDragActive
-              ? 'border-cyan-500 bg-cyan-500/10'
-              : 'border-white/30 hover:border-cyan-500/50 hover:bg-white/5'
+              ? 'border-biolum-teal bg-biolum-teal/10'
+              : 'border-white/[0.1] hover:border-biolum-teal/50 hover:bg-black/20'
           }`}
         >
           <input {...getInputProps()} />
           <Upload className="w-16 h-16 text-cyan-400 mx-auto mb-6" />
           {isDragActive ? (
             <div>
-              <h3 className="text-2xl font-semibold text-white mb-2">Drop files here</h3>
-              <p className="text-gray-300">Release to upload your datasets</p>
+              <h3 className="text-3xl font-black tracking-tighter text-white mb-2">Initialize Transfer</h3>
+              <p className="text-gray-400 font-bold tracking-widest uppercase text-xs">Release to upload your datasets</p>
             </div>
           ) : (
             <div>
-              <h3 className="text-2xl font-semibold text-white mb-2">Upload Your Datasets</h3>
-              <p className="text-gray-300 mb-4">
+              <h3 className="text-3xl font-black tracking-tighter text-white mb-2">Upload Data Core</h3>
+              <p className="text-gray-400 font-bold tracking-widest uppercase text-xs mb-4">
                 Drag and drop your files here, or click to browse
               </p>
-              <p className="text-sm text-gray-400">
+              <p className="text-[10px] tracking-widest uppercase font-bold text-gray-500">
                 Supported formats: CSV, JSON, TXT, XLS, XLSX (Max 100MB per file)
               </p>
             </div>
@@ -115,9 +115,9 @@ function DatasetUpload() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2, duration: 0.6 }}
-        className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl p-6"
+        className="bg-black/20 backdrop-blur-3xl border border-white/[0.05] border-t-white/[0.1] border-l-white/[0.1] rounded-[3rem] p-10 shadow-2xl"
       >
-        <h3 className="text-xl font-semibold text-white mb-4">Dataset Classification</h3>
+        <h3 className="text-2xl font-black tracking-tighter text-white mb-6">Dataset Classification</h3>
         <div className="grid md:grid-cols-3 gap-4">
           {[
             {
@@ -141,13 +141,13 @@ function DatasetUpload() {
           ].map((category) => (
             <div
               key={category.type}
-              className="bg-white/5 hover:bg-white/10 border border-white/20 rounded-lg p-4 cursor-pointer transition-all duration-200"
+              className="bg-black/20 hover:bg-black/40 border border-white/[0.05] hover:border-white/[0.1] rounded-3xl p-6 cursor-pointer transition-all duration-300 hover:-translate-y-1 shadow-lg"
             >
-              <div className={`bg-gradient-to-r ${category.gradient} p-3 rounded-lg w-fit mb-3`}>
+              <div className={`bg-gradient-to-r ${category.gradient} p-4 rounded-2xl w-fit mb-4 shadow-[0_0_15px_rgba(255,255,255,0.1)]`}>
                 {category.icon}
               </div>
-              <h4 className="text-white font-medium mb-2">{category.type}</h4>
-              <p className="text-gray-400 text-sm">{category.description}</p>
+              <h4 className="text-white font-bold tracking-tight text-lg mb-2">{category.type}</h4>
+              <p className="text-gray-500 text-xs font-bold tracking-widest uppercase">{category.description}</p>
             </div>
           ))}
         </div>
@@ -159,22 +159,24 @@ function DatasetUpload() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4, duration: 0.6 }}
-          className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl p-6"
+          className="bg-black/20 backdrop-blur-3xl border border-white/[0.05] border-t-white/[0.1] border-l-white/[0.1] rounded-[3rem] p-10 shadow-2xl"
         >
-          <h3 className="text-xl font-semibold text-white mb-4">Upload Progress</h3>
+          <h3 className="text-2xl font-black tracking-tighter text-white mb-6">Upload Progress</h3>
           <div className="space-y-4">
             {uploadedFiles.map((file) => {
               const progress = uploadProgress[file.name] || 0;
               const isComplete = progress >= 100;
               
               return (
-                <div key={file.name} className="bg-white/5 rounded-lg p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center space-x-3">
-                      {getFileIcon(file.name)}
+                <div key={file.name} className="bg-black/20 border border-white/[0.05] rounded-2xl p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center space-x-4">
+                      <div className="bg-black/40 p-3 rounded-xl border border-white/[0.05]">
+                        {getFileIcon(file.name)}
+                      </div>
                       <div>
-                        <div className="text-white font-medium">{file.name}</div>
-                        <div className="text-sm text-gray-400">
+                        <div className="text-white font-bold tracking-wide">{file.name}</div>
+                        <div className="text-xs font-bold tracking-widest uppercase text-gray-500 mt-1">
                           {(file.size / 1024 / 1024).toFixed(2)} MB
                         </div>
                       </div>

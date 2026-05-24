@@ -72,26 +72,26 @@ function DashboardStats({ }: StatsProps) {
           transition={{ delay: index * 0.1, duration: 0.5 }}
           className="group relative"
         >
-          <div className="absolute inset-0 bg-gradient-to-r from-white/5 to-white/10 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-300" />
-          <div className="relative overflow-hidden bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl border border-white/20 rounded-2xl p-7 hover:from-white/15 hover:to-white/10 hover:border-white/40 transition-all duration-300 h-full group-hover:shadow-2xl group-hover:shadow-white/10">
-            <div className="flex items-center justify-between mb-6">
-              <div className={`bg-gradient-to-r ${stat.gradient} p-3 rounded-xl shadow-lg transform group-hover:scale-110 transition-transform duration-300`}>
+          <div className="absolute inset-0 bg-gradient-to-r from-biolum-teal/5 to-biolum-purple/5 rounded-[2rem] blur-2xl opacity-0 group-hover:opacity-100 transition-all duration-500" />
+          <div className="relative overflow-hidden bg-black/20 backdrop-blur-3xl border border-white/[0.05] border-t-white/[0.1] border-l-white/[0.1] rounded-[2rem] p-8 hover:bg-black/40 hover:border-biolum-teal/30 transition-all duration-500 h-full shadow-2xl group-hover:-translate-y-1">
+            <div className="flex items-center justify-between mb-8 relative z-10">
+              <div className={`bg-gradient-to-r ${stat.gradient} p-3.5 rounded-2xl shadow-[0_0_20px_rgba(255,255,255,0.1)] transform group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500`}>
                 <div className="text-white">{stat.icon}</div>
               </div>
-              <div className={`flex items-center space-x-1 px-3 py-1 rounded-full text-sm font-bold ${
+              <div className={`flex items-center space-x-1 px-3 py-1.5 rounded-full text-xs font-black tracking-widest uppercase ${
                 stat.trend === 'up' 
-                  ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
-                  : 'bg-red-500/20 text-red-400 border border-red-500/30'
+                  ? 'bg-biolum-emerald/10 text-biolum-emerald border border-biolum-emerald/30' 
+                  : 'bg-red-500/10 text-red-400 border border-red-500/30'
               }`}>
                 <span>{stat.change}</span>
-                <TrendingUp className={`w-4 h-4 ${
+                <TrendingUp className={`w-3 h-3 ${
                   stat.trend === 'down' ? 'rotate-180' : ''
                 }`} />
               </div>
             </div>
-            <h3 className="text-3xl font-black text-white mb-2">{stat.value}</h3>
-            <p className="text-gray-400 text-sm font-medium">{stat.title}</p>
-            <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-white/10 to-transparent rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <h3 className="text-4xl font-black tracking-tighter text-white mb-2 relative z-10">{stat.value}</h3>
+            <p className="text-xs tracking-widest uppercase text-gray-500 font-bold relative z-10">{stat.title}</p>
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-white/[0.05] to-transparent rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
           </div>
         </motion.div>
       ))}

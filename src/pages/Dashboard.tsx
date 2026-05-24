@@ -5,8 +5,10 @@ import { useAuth } from '../contexts/AuthContext';
 import { useNotifications } from '../contexts/NotificationContext';
 import Navigation from '../components/layout/Navigation';
 import Sidebar from '../components/layout/Sidebar';
-import DashboardCharts from '../components/dashboard/DashboardCharts';
 import DashboardStats from '../components/dashboard/DashboardStats';
+import PlanktonParticles from '../components/ui/PlanktonParticles';
+import Cesium3DOcean from '../components/maps/Cesium3DOcean';
+import DashboardCharts from '../components/dashboard/DashboardCharts';
 import OceanMap from '../components/maps/OceanMap';
 function Dashboard() {
   const navigate = useNavigate();
@@ -30,7 +32,8 @@ function Dashboard() {
       title: 'Welcome back!',
       message: `Dashboard loaded successfully for ${user.name}`
     });
-  }, [user, navigate, addNotification]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, navigate]);
 
   const handleLogout = () => {
     logout();
@@ -50,13 +53,15 @@ function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen">
-      <Navigation onLogout={handleLogout} />
-      
-      <div className="flex">
-        <Sidebar 
-          filters={filters} 
-          onFiltersChange={setFilters}
+    <div className="min-h-screen relative bg-[linear-gradient(180deg,#0369a1_0%,#1e3a8a_50%,#06090e_100%)] selection:bg-biolum-teal/30 selection:text-biolum-teal">
+      <PlanktonParticles />
+      <div className="relative z-10">
+        <Navigation onLogout={handleLogout} />
+        
+        <div className="flex">
+          <Sidebar 
+            filters={filters} 
+            onFiltersChange={setFilters}
           onExport={handleExport}
         />
         
@@ -66,11 +71,11 @@ function Dashboard() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <h1 className="text-4xl font-bold text-white mb-2">
-              Dashboard Overview
+            <h1 className="text-5xl font-black tracking-tighter text-white mb-2">
+              Deep Intelligence
             </h1>
-            <p className="text-gray-400 mb-8">
-              Real-time insights from marine data across the globe
+            <p className="text-gray-400 mb-10 text-sm uppercase tracking-widest font-bold">
+              Real-time insights from global marine telemetry
             </p>
 
             <DashboardStats filters={filters} />
@@ -86,6 +91,7 @@ function Dashboard() {
             </div>
           </motion.div>
         </main>
+      </div>
       </div>
     </div>
   );

@@ -176,7 +176,7 @@ function SpeciesUpload({ onIdentificationComplete }: SpeciesUploadProps) {
       className="space-y-6"
     >
       {/* Upload Area */}
-      <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl p-6">
+      <div className="bg-black/60 backdrop-blur-xl border border-white/20 rounded-xl p-6">
         <h3 className="text-xl font-semibold text-white mb-4 flex items-center space-x-2">
           <Camera className="w-5 h-5" />
           <span>Upload Images</span>
@@ -187,7 +187,7 @@ function SpeciesUpload({ onIdentificationComplete }: SpeciesUploadProps) {
           className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all duration-300 ${
             isDragActive
               ? "border-cyan-500 bg-cyan-500/10"
-              : "border-white/30 hover:border-cyan-500/50 hover:bg-white/5"
+              : "border-white/30 hover:border-cyan-500/50 hover:bg-black/50"
           }`}
         >
           <input {...getInputProps()} />
@@ -268,7 +268,7 @@ function SpeciesUpload({ onIdentificationComplete }: SpeciesUploadProps) {
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl p-4"
+          className="bg-black/60 backdrop-blur-xl border border-white/20 rounded-xl p-4"
         >
           <div className="flex items-center space-x-3">
             <div className="w-6 h-6 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin"></div>
@@ -293,7 +293,7 @@ function SpeciesUpload({ onIdentificationComplete }: SpeciesUploadProps) {
       )}
 
       {/* Quick Tips */}
-      <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-4">
+      <div className="bg-black/50 backdrop-blur-xl border border-white/10 rounded-xl p-4">
         <h4 className="text-white font-medium mb-3">Tips for Better Results</h4>
         <ul className="space-y-2 text-sm text-gray-300">
           <li className="flex items-center space-x-2">

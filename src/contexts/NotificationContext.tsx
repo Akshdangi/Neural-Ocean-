@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, AlertTriangle, CheckCircle, Info } from 'lucide-react';
 
@@ -19,16 +19,16 @@ const NotificationContext = createContext<NotificationContextType | undefined>(u
 export function NotificationProvider({ children }: { children: React.ReactNode }) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
-  const addNotification = (notification: Omit<Notification, 'id'>) => {
+  const addNotification = useCallback((notification: Omit<Notification, 'id'>) => {
     const id = Math.random().toString(36).substr(2, 9);
     const newNotification = { ...notification, id };
     
     setNotifications(prev => [...prev, newNotification]);
     
     setTimeout(() => {
-      removeNotification(id);
+      setNotifications(prev => prev.filter(n => n.id !== id));
     }, 5000);
-  };
+  }, []);
 
   const removeNotification = (id: string) => {
     setNotifications(prev => prev.filter(n => n.id !== id));
@@ -54,7 +54,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
               initial={{ opacity: 0, x: 300 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 300 }}
-              className="bg-white/10 backdrop-blur-md border border-white/20 rounded-lg p-4 shadow-xl max-w-sm"
+              className="bg-black/60 backdrop-blur-md border border-white/20 rounded-lg p-4 shadow-xl max-w-sm"
             >
               <div className="flex items-start space-x-3">
                 {getIcon(notification.type)}

@@ -38,10 +38,10 @@ function DashboardCharts({ }: ChartsProps) {
   ];
 
   const speciesData = [
-    { name: 'Tuna', value: 35, color: '#3B82F6' },
-    { name: 'Salmon', value: 28, color: '#10B981' },
-    { name: 'Sardine', value: 22, color: '#F59E0B' },
-    { name: 'Cod', value: 15, color: '#EF4444' }
+    { name: 'Tuna', value: 35, color: '#06b6d4' },
+    { name: 'Salmon', value: 28, color: '#10b981' },
+    { name: 'Sardine', value: 22, color: '#8b5cf6' },
+    { name: 'Cod', value: 15, color: '#ef4444' }
   ];
 
   const regionData = [
@@ -61,9 +61,9 @@ function DashboardCharts({ }: ChartsProps) {
         transition={{ duration: 0.6 }}
         className="group relative overflow-hidden"
       >
-        <div className="absolute inset-0 bg-gradient-to-r from-white/5 to-white/10 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-300" />
-        <div className="relative bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl border border-white/20 rounded-2xl p-8 hover:from-white/15 hover:to-white/10 hover:border-white/40 transition-all duration-300 group-hover:shadow-2xl group-hover:shadow-blue-500/10">
-          <h3 className="text-2xl font-bold text-white mb-8">Fish Stock Trends</h3>
+        <div className="absolute inset-0 bg-gradient-to-r from-biolum-teal/5 to-biolum-purple/5 rounded-[3rem] blur-2xl opacity-0 group-hover:opacity-100 transition-all duration-500" />
+        <div className="relative bg-black/20 backdrop-blur-3xl border border-white/[0.05] border-t-white/[0.1] border-l-white/[0.1] rounded-[3rem] p-10 hover:bg-black/40 hover:border-biolum-teal/30 transition-all duration-500 shadow-2xl group-hover:-translate-y-1">
+          <h3 className="text-4xl font-black tracking-tighter text-white mb-8">Fish Stock Trends</h3>
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={timeSeriesData}>
@@ -82,9 +82,9 @@ function DashboardCharts({ }: ChartsProps) {
                 <Line 
                   type="monotone" 
                   dataKey="fishStock" 
-                  stroke="#3B82F6" 
+                  stroke="#06b6d4" 
                   strokeWidth={3}
-                  dot={{ fill: '#3B82F6', strokeWidth: 2, r: 6 }}
+                  dot={{ fill: '#06b6d4', strokeWidth: 2, r: 6 }}
                   isAnimationActive={true}
                 />
               </LineChart>
@@ -100,9 +100,9 @@ function DashboardCharts({ }: ChartsProps) {
         transition={{ delay: 0.2, duration: 0.6 }}
         className="group relative overflow-hidden"
       >
-        <div className="absolute inset-0 bg-gradient-to-r from-white/5 to-white/10 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-300" />
-        <div className="relative bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl border border-white/20 rounded-2xl p-8 hover:from-white/15 hover:to-white/10 hover:border-white/40 transition-all duration-300 group-hover:shadow-2xl group-hover:shadow-green-500/10">
-          <h3 className="text-2xl font-bold text-white mb-8">Biodiversity & Temperature</h3>
+        <div className="absolute inset-0 bg-gradient-to-r from-biolum-teal/5 to-biolum-purple/5 rounded-[3rem] blur-2xl opacity-0 group-hover:opacity-100 transition-all duration-500" />
+        <div className="relative bg-black/20 backdrop-blur-3xl border border-white/[0.05] border-t-white/[0.1] border-l-white/[0.1] rounded-[3rem] p-10 hover:bg-black/40 hover:border-biolum-teal/30 transition-all duration-500 shadow-2xl group-hover:-translate-y-1">
+          <h3 className="text-4xl font-black tracking-tighter text-white mb-8">Biodiversity & Temperature</h3>
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={timeSeriesData}>
@@ -150,9 +150,9 @@ function DashboardCharts({ }: ChartsProps) {
           transition={{ delay: 0.4, duration: 0.6 }}
           className="group relative overflow-hidden"
         >
-          <div className="absolute inset-0 bg-gradient-to-r from-white/5 to-white/10 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-300" />
-          <div className="relative bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl border border-white/20 rounded-2xl p-8 hover:from-white/15 hover:to-white/10 hover:border-white/40 transition-all duration-300 group-hover:shadow-2xl group-hover:shadow-purple-500/10">
-            <h3 className="text-2xl font-bold text-white mb-8">Species Distribution</h3>
+          <div className="absolute inset-0 bg-gradient-to-r from-biolum-teal/5 to-biolum-purple/5 rounded-[3rem] blur-2xl opacity-0 group-hover:opacity-100 transition-all duration-500" />
+          <div className="relative bg-black/20 backdrop-blur-3xl border border-white/[0.05] border-t-white/[0.1] border-l-white/[0.1] rounded-[3rem] p-10 hover:bg-black/40 hover:border-biolum-teal/30 transition-all duration-500 shadow-2xl group-hover:-translate-y-1">
+            <h3 className="text-3xl font-black tracking-tighter text-white mb-8">Species Distribution</h3>
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -189,9 +189,9 @@ function DashboardCharts({ }: ChartsProps) {
           transition={{ delay: 0.6, duration: 0.6 }}
           className="group relative overflow-hidden"
         >
-          <div className="absolute inset-0 bg-gradient-to-r from-white/5 to-white/10 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-300" />
-          <div className="relative bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl border border-white/20 rounded-2xl p-8 hover:from-white/15 hover:to-white/10 hover:border-white/40 transition-all duration-300 group-hover:shadow-2xl group-hover:shadow-orange-500/10">
-            <h3 className="text-2xl font-bold text-white mb-8">Regional Data Coverage</h3>
+          <div className="absolute inset-0 bg-gradient-to-r from-biolum-teal/5 to-biolum-purple/5 rounded-[3rem] blur-2xl opacity-0 group-hover:opacity-100 transition-all duration-500" />
+          <div className="relative bg-black/20 backdrop-blur-3xl border border-white/[0.05] border-t-white/[0.1] border-l-white/[0.1] rounded-[3rem] p-10 hover:bg-black/40 hover:border-biolum-teal/30 transition-all duration-500 shadow-2xl group-hover:-translate-y-1">
+            <h3 className="text-3xl font-black tracking-tighter text-white mb-8">Regional Data Coverage</h3>
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={regionData}>
@@ -215,8 +215,8 @@ function DashboardCharts({ }: ChartsProps) {
                   />
                   <defs>
                     <linearGradient id="gradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#3B82F6" />
-                      <stop offset="100%" stopColor="#1D4ED8" />
+                      <stop offset="0%" stopColor="#06b6d4" />
+                      <stop offset="100%" stopColor="#8b5cf6" />
                     </linearGradient>
                   </defs>
                 </BarChart>

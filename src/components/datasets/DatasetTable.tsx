@@ -307,7 +307,7 @@ function DatasetTable({ searchTerm, filters }: DatasetTableProps) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}
-      className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl overflow-hidden"
+      className="bg-black/20 backdrop-blur-3xl border border-white/[0.05] border-t-white/[0.1] border-l-white/[0.1] rounded-[3rem] overflow-hidden shadow-2xl"
     >
       <div className="p-6 border-b border-white/20">
         <div className="flex items-center justify-between">
@@ -321,9 +321,9 @@ function DatasetTable({ searchTerm, filters }: DatasetTableProps) {
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className="bg-white/5">
+            <tr className="bg-black/20 border-b border-white/[0.05]">
               <th 
-                className="text-left p-4 text-gray-300 font-medium cursor-pointer hover:text-white transition-colors"
+                className="text-left p-6 text-gray-500 font-bold tracking-widest uppercase text-[10px] cursor-pointer hover:text-white transition-colors"
                 onClick={() => handleSort('name')}
               >
                 <div className="flex items-center space-x-2">
@@ -332,7 +332,7 @@ function DatasetTable({ searchTerm, filters }: DatasetTableProps) {
                 </div>
               </th>
               <th 
-                className="text-left p-4 text-gray-300 font-medium cursor-pointer hover:text-white transition-colors"
+                className="text-left p-6 text-gray-500 font-bold tracking-widest uppercase text-[10px] cursor-pointer hover:text-white transition-colors"
                 onClick={() => handleSort('type')}
               >
                 <div className="flex items-center space-x-2">
@@ -341,7 +341,7 @@ function DatasetTable({ searchTerm, filters }: DatasetTableProps) {
                 </div>
               </th>
               <th 
-                className="text-left p-4 text-gray-300 font-medium cursor-pointer hover:text-white transition-colors"
+                className="text-left p-6 text-gray-500 font-bold tracking-widest uppercase text-[10px] cursor-pointer hover:text-white transition-colors"
                 onClick={() => handleSort('location')}
               >
                 <div className="flex items-center space-x-2">
@@ -350,7 +350,7 @@ function DatasetTable({ searchTerm, filters }: DatasetTableProps) {
                 </div>
               </th>
               <th 
-                className="text-left p-4 text-gray-300 font-medium cursor-pointer hover:text-white transition-colors"
+                className="text-left p-6 text-gray-500 font-bold tracking-widest uppercase text-[10px] cursor-pointer hover:text-white transition-colors"
                 onClick={() => handleSort('date')}
               >
                 <div className="flex items-center space-x-2">
@@ -358,9 +358,9 @@ function DatasetTable({ searchTerm, filters }: DatasetTableProps) {
                   <SortIcon field="date" />
                 </div>
               </th>
-              <th className="text-left p-4 text-gray-300 font-medium">Records</th>
-              <th className="text-left p-4 text-gray-300 font-medium">Status</th>
-              <th className="text-left p-4 text-gray-300 font-medium">Actions</th>
+              <th className="text-left p-6 text-gray-500 font-bold tracking-widest uppercase text-[10px]">Records</th>
+              <th className="text-left p-6 text-gray-500 font-bold tracking-widest uppercase text-[10px]">Status</th>
+              <th className="text-left p-6 text-gray-500 font-bold tracking-widest uppercase text-[10px]">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -370,11 +370,11 @@ function DatasetTable({ searchTerm, filters }: DatasetTableProps) {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.1, duration: 0.4 }}
-                className="border-t border-white/10 hover:bg-white/5 transition-colors"
+                className="border-t border-white/[0.05] hover:bg-black/20 transition-colors"
               >
                 <td className="p-4">
                   <div className="flex items-center space-x-3">
-                    <Database className="w-5 h-5 text-cyan-400" />
+                    <Database className="w-5 h-5 text-biolum-teal" />
                     <div>
                       <div className="text-white font-medium">{dataset.name}</div>
                       <div className="text-sm text-gray-400">{dataset.format} • {dataset.size}</div>
@@ -413,7 +413,7 @@ function DatasetTable({ searchTerm, filters }: DatasetTableProps) {
                   <div className="flex items-center space-x-2">
                     <button
                       onClick={() => handleView(dataset)}
-                      className="p-2 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 rounded-lg transition-colors"
+                      className="p-3 bg-biolum-teal/10 hover:bg-biolum-teal/20 text-biolum-teal rounded-xl transition-colors"
                       title="View Dataset"
                     >
                       <Eye className="w-4 h-4" />
@@ -463,14 +463,14 @@ function DatasetTable({ searchTerm, filters }: DatasetTableProps) {
             <button
               onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
               disabled={currentPage === 1}
-              className="px-3 py-2 bg-white/10 hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed text-gray-300 hover:text-white rounded-lg transition-all duration-200"
+              className="px-6 py-3 bg-black/30 hover:bg-white/[0.06] border border-white/[0.05] disabled:opacity-50 disabled:cursor-not-allowed text-gray-400 hover:text-white rounded-xl font-bold tracking-widest uppercase text-[10px] transition-all duration-300"
             >
               Previous
             </button>
             <button
               onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
               disabled={currentPage === totalPages}
-              className="px-3 py-2 bg-white/10 hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed text-gray-300 hover:text-white rounded-lg transition-all duration-200"
+              className="px-6 py-3 bg-black/30 hover:bg-white/[0.06] border border-white/[0.05] disabled:opacity-50 disabled:cursor-not-allowed text-gray-400 hover:text-white rounded-xl font-bold tracking-widest uppercase text-[10px] transition-all duration-300"
             >
               Next
             </button>

@@ -1,58 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import Navigation from "../components/layout/Navigation";
 import Sidebar from "../components/layout/Sidebar";
-import { Microscope, Ruler, Camera, Brain, Loader2, Upload } from "lucide-react";
-
-// === Default 20 datasets ===
-const baseDatasets = [
-  { id: 1, name: "Atlantic Tuna Stock Assessment 2024", type: "Fisheries", location: "Atlantic Ocean", date: "2024-01-15" },
-  { id: 2, name: "Mediterranean Biodiversity Survey", type: "Biodiversity", location: "Mediterranean Sea", date: "2024-01-10" },
-  { id: 3, name: "Pacific eDNA Sampling - Q4 2023", type: "eDNA", location: "Pacific Ocean", date: "2023-12-28" },
-  { id: 4, name: "Arctic Ocean Temperature Profiles", type: "Oceanographic", location: "Arctic Ocean", date: "2023-12-20" },
-  { id: 5, name: "Coral Reef Health Assessment", type: "Biodiversity", location: "Indian Ocean", date: "2023-12-15" },
-  { id: 6, name: "North Sea Cod Population 2023", type: "Fisheries", location: "North Sea", date: "2023-11-22" },
-  { id: 7, name: "Caribbean Coral Bleaching Events", type: "Biodiversity", location: "Caribbean Sea", date: "2023-11-05" },
-  { id: 8, name: "Bay of Bengal Phytoplankton Census", type: "eDNA", location: "Bay of Bengal", date: "2023-10-18" },
-  { id: 9, name: "Southern Ocean Salinity Trends", type: "Oceanographic", location: "Southern Ocean", date: "2023-09-27" },
-  { id: 10, name: "Gulf of Mexico Shrimp Fisheries Report", type: "Fisheries", location: "Gulf of Mexico", date: "2023-09-10" },
-  { id: 11, name: "Baltic Sea Biodiversity Index 2023", type: "Biodiversity", location: "Baltic Sea", date: "2023-08-30" },
-  { id: 12, name: "Hawaiian Coral Reef eDNA Study", type: "eDNA", location: "Pacific Ocean", date: "2023-08-15" },
-  { id: 13, name: "Norwegian Sea Temperature Series", type: "Oceanographic", location: "Norwegian Sea", date: "2023-07-20" },
-  { id: 14, name: "South China Sea Fish Stock Data", type: "Fisheries", location: "South China Sea", date: "2023-07-01" },
-  { id: 15, name: "Great Barrier Reef Species Catalog", type: "Biodiversity", location: "Coral Sea", date: "2023-06-14" },
-  { id: 16, name: "California Current eDNA Archive", type: "eDNA", location: "Pacific Ocean", date: "2023-05-25" },
-  { id: 17, name: "Antarctic Ice Shelf Temperature Records", type: "Oceanographic", location: "Southern Ocean", date: "2023-05-10" },
-  { id: 18, name: "Black Sea Anchovy Fisheries Report", type: "Fisheries", location: "Black Sea", date: "2023-04-28" },
-  { id: 19, name: "Red Sea Coral Biodiversity 2023", type: "Biodiversity", location: "Red Sea", date: "2023-04-12" },
-  { id: 20, name: "Japan Coastal eDNA Pilot Study", type: "eDNA", location: "Pacific Ocean", date: "2023-03-30" },
-];
-
-// Morphology analysis
-const analyzeOtoliths = (data: any[]) => {
-  return data.map((sample) => {
-    const length = (Math.random() * 4 + 2).toFixed(2); // 2–6 mm
-    const width = (Math.random() * 2 + 0.5).toFixed(2); // 0.5–2.5 mm
-    const aspectRatio = (parseFloat(length) / parseFloat(width)).toFixed(2);
-    const circularity = (
-      (4 * Math.PI * parseFloat(width) * parseFloat(length)) /
-      Math.pow(parseFloat(length) + parseFloat(width), 2)
-    ).toFixed(2);
-    const predictedAge = Math.floor(parseFloat(length) * 2 + Math.random() * 3);
-
-    return {
-      ...sample,
-      length,
-      width,
-      aspectRatio,
-      circularity,
-      predictedAge,
-    };
-  });
-};
+import { Microscope, Ruler, Camera, Brain, Loader2, Upload, CheckCircle, BarChart3 } from "lucide-react";
+import { predictOtolith, getOtolithStatus, trainOtolithModel, type OtolithPrediction, type ModelStatus } from "../services/mlApi";
 
 function OtolithMorphology() {
   const navigate = useNavigate();
@@ -63,62 +17,99 @@ function OtolithMorphology() {
     dataType: "All Data",
   });
 
+  const [modelStatus, setModelStatus] = useState<ModelStatus | null>(null);
+  const [isTraining, setIsTraining] = useState(false);
+  const [measurements, setMeasurements] = useState({
+    length: '',
+    width: '',
+    weight: '',
+  });
+  const [prediction, setPrediction] = useState<OtolithPrediction | null>(null);
   const [loading, setLoading] = useState(false);
-  const [datasets, setDatasets] = useState<any[]>(baseDatasets);
-  const [results, setResults] = useState<any[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
-  if (!user) {
-    navigate("/login");
-    return null;
-  }
+  // Batch analysis state
+  const [batchResults, setBatchResults] = useState<any[]>([]);
+  const [batchLoading, setBatchLoading] = useState(false);
 
-  const handleLogout = () => {
-    logout();
-    navigate("/");
+  useEffect(() => {
+    if (!user) navigate("/login");
+  }, [user, navigate]);
+
+  useEffect(() => {
+    getOtolithStatus().then(setModelStatus).catch(() => {});
+  }, []);
+
+  const handleTrain = async () => {
+    setIsTraining(true);
+    setError(null);
+    try {
+      await trainOtolithModel();
+      const status = await getOtolithStatus();
+      setModelStatus(status);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setIsTraining(false);
+    }
   };
 
-  const handleExport = (format: string) => {
-    console.log(`Export ${format}`);
-  };
-
-  const handleAnalysis = (newData = datasets) => {
+  const handlePredict = async () => {
+    const length = parseFloat(measurements.length);
+    const width = parseFloat(measurements.width);
+    if (isNaN(length) || isNaN(width) || length <= 0 || width <= 0) {
+      setError('Please enter valid length and width values.');
+      return;
+    }
     setLoading(true);
-    setTimeout(() => {
-      const analyzed = analyzeOtoliths(newData);
-      setResults(analyzed);
+    setPrediction(null);
+    setError(null);
+    try {
+      const result = await predictOtolith({
+        length,
+        width,
+        weight: measurements.weight ? parseFloat(measurements.weight) : undefined,
+      });
+      setPrediction(result);
+    } catch (err: any) {
+      setError(err.message || 'Prediction failed');
+    } finally {
       setLoading(false);
-    }, 1500);
+    }
   };
 
-  const handleUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
+  const handleBatchAnalysis = async () => {
+    if (modelStatus?.status !== 'ready') return;
+    setBatchLoading(true);
+    setError(null);
+    const results: any[] = [];
+    // Generate 20 random samples
+    for (let i = 0; i < 20; i++) {
+      const length = (Math.random() * 4 + 2).toFixed(2);
+      const width = (Math.random() * 2 + 0.5).toFixed(2);
+      const weight = (Math.random() * 0.1 + 0.01).toFixed(4);
       try {
-        const content = e.target?.result as string;
-        const parsed = JSON.parse(content); // Expect JSON dataset
-        const newDataset = {
-          id: datasets.length + 1,
-          name: parsed.name || `Uploaded Dataset ${datasets.length + 1}`,
-          type: parsed.type || "Unknown",
-          location: parsed.location || "Unknown",
-          date: new Date().toISOString().split("T")[0],
-        };
-        const updated = [...datasets, newDataset];
-        setDatasets(updated);
-        handleAnalysis(updated); // auto run analysis
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      } catch (err) {
-        alert("Invalid file format. Please upload JSON with fields: name, type, location.");
+        const pred = await predictOtolith({
+          length: parseFloat(length),
+          width: parseFloat(width),
+          weight: parseFloat(weight),
+        });
+        results.push({ id: i + 1, length, width, weight, ...pred });
+      } catch {
+        results.push({ id: i + 1, length, width, weight, predicted_age: 'Error' });
       }
-    };
-    reader.readAsText(file);
+    }
+    setBatchResults(results);
+    setBatchLoading(false);
   };
+
+  if (!user) return null;
+
+  const handleLogout = () => { logout(); navigate("/"); };
+  const handleExport = (format: string) => { console.log(`Export ${format}`); };
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-[linear-gradient(180deg,#020617_0%,#1e293b_50%,#0f172a_100%)] selection:bg-amber-500/30 selection:text-amber-300">
       <Navigation onLogout={handleLogout} />
 
       <div className="flex">
@@ -126,85 +117,184 @@ function OtolithMorphology() {
 
         <main className="flex-1 p-8">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-            <h1 className="text-4xl font-bold text-white mb-2">Otolith Morphology</h1>
-            <p className="text-gray-400 mb-8">
-              Advanced otolith analysis for fish age determination and species identification
+            {/* Abyssal Tech Banner */}
+            <div className="relative w-full h-[300px] rounded-[3rem] overflow-hidden mb-8 border border-amber-500/20 shadow-[0_0_40px_rgba(245,158,11,0.15)] group">
+              <img src="/assets/otolith.png" alt="Otolith Morphology" className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
+              <div className="absolute inset-0 bg-amber-500/10 mix-blend-overlay" />
+              
+              <div className="absolute bottom-8 left-8">
+                <div className="inline-block px-3 py-1 bg-amber-500/20 border border-amber-500/50 rounded-full text-[10px] font-black tracking-widest uppercase text-amber-400 mb-3">
+                  Microscopic Analysis
+                </div>
+                <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-white drop-shadow-[0_0_15px_rgba(245,158,11,0.5)]">
+                  Otolith Morphology
+                </h1>
+              </div>
+            </div>
+
+            <p className="text-gray-400 mb-10 text-sm uppercase tracking-widest font-bold">
+              Predict fish age and growth patterns from ear bone measurements
             </p>
 
             {/* Summary cards */}
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
               {[
-                { icon: <Microscope className="w-8 h-8" />, title: "Microscopic Analysis", count: `${datasets.length} Datasets` },
-                { icon: <Ruler className="w-8 h-8" />, title: "Morphometric Data", count: "Length / Width / Ratios" },
-                { icon: <Camera className="w-8 h-8" />, title: "Image Processing", count: "Simulated AI Extracted" },
-                { icon: <Brain className="w-8 h-8" />, title: "Age Prediction", count: "Based on Otolith Growth" },
+                { icon: <Microscope className="w-8 h-8" />, title: "ML Model", count: modelStatus?.status === 'ready' ? '✓ Trained' : '○ Not Trained' },
+                { icon: <Ruler className="w-8 h-8" />, title: "Features", count: "6 Morphometric" },
+                { icon: <Camera className="w-8 h-8" />, title: "Algorithm", count: "Random Forest" },
+                { icon: <Brain className="w-8 h-8" />, title: "R² Score", count: modelStatus?.metrics?.test_r2 ? `${(modelStatus.metrics.test_r2 * 100).toFixed(1)}%` : 'N/A' },
               ].map((item, index) => (
-                <motion.div key={item.title} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1, duration: 0.5 }}
-                  className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl p-6 text-center">
-                  <div className="text-purple-400 mb-4 flex justify-center">{item.icon}</div>
-                  <h3 className="text-white font-semibold mb-2">{item.title}</h3>
-                  <p className="text-gray-400">{item.count}</p>
+                <motion.div key={item.title} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }}
+                  className="bg-black/20 backdrop-blur-3xl border border-white/[0.05] border-t-white/[0.1] border-l-white/[0.1] rounded-[2rem] p-6 text-center shadow-2xl hover:-translate-y-1 hover:bg-black/40 transition-all duration-500 group">
+                  <div className="text-biolum-teal mb-4 flex justify-center group-hover:scale-110 transition-transform duration-500">{item.icon}</div>
+                  <h3 className="text-white font-bold tracking-tight mb-2">{item.title}</h3>
+                  <p className="text-gray-500 text-xs font-bold tracking-widest uppercase">{item.count}</p>
                 </motion.div>
               ))}
             </div>
 
-            {/* Upload & Analysis Section */}
-            <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl p-8 text-center">
-              <Microscope className="w-16 h-16 text-purple-400 mx-auto mb-4" />
-              <h2 className="text-2xl font-bold text-white mb-4">Otolith Analysis Platform</h2>
-              <p className="text-gray-300 mb-6">
-                Upload new datasets (JSON format) or analyze existing 20 datasets automatically.
-              </p>
+            <div className="grid lg:grid-cols-2 gap-8 mb-8">
+              {/* Single Prediction Panel */}
+              <div className="bg-black/20 backdrop-blur-3xl border border-white/[0.05] border-t-white/[0.1] border-l-white/[0.1] rounded-[3rem] p-10 shadow-2xl">
+                <div className="flex items-center gap-3 mb-8">
+                  <Microscope className="w-8 h-8 text-biolum-teal" />
+                  <h2 className="text-3xl font-black tracking-tighter text-white">Age Prediction</h2>
+                </div>
 
-              <div className="flex justify-center gap-4">
-                <label className="cursor-pointer bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-lg font-semibold flex items-center">
-                  <Upload className="w-5 h-5 mr-2" />
-                  Upload Dataset
-                  <input type="file" accept=".json" onChange={handleUpload} className="hidden" />
-                </label>
+                {modelStatus && modelStatus.status !== 'ready' && (
+                  <button onClick={handleTrain} disabled={isTraining}
+                    className="w-full mb-6 px-4 py-4 bg-black/40 hover:bg-white/[0.1] border border-white/[0.1] text-white font-black tracking-widest uppercase text-xs rounded-2xl disabled:opacity-50 flex items-center justify-center gap-3 transition-all duration-300">
+                    {isTraining ? <><Loader2 className="w-4 h-4 animate-spin" /> Training...</> : <><Brain className="w-4 h-4 text-biolum-teal" /> Train Model First</>}
+                  </button>
+                )}
 
-                <button onClick={() => handleAnalysis()} disabled={loading}
-                  className="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-400 hover:to-indigo-500 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 flex items-center">
-                  {loading && <Loader2 className="animate-spin w-5 h-5 mr-2" />}
-                  {loading ? "Analyzing..." : "Analyze All"}
-                </button>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-300 mb-2">Otolith Length (mm) *</label>
+                    <input type="number" step="0.01" value={measurements.length}
+                      onChange={(e) => setMeasurements({ ...measurements, length: e.target.value })}
+                      className="w-full bg-black/50 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      placeholder="e.g. 4.5" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-300 mb-2">Otolith Width (mm) *</label>
+                    <input type="number" step="0.01" value={measurements.width}
+                      onChange={(e) => setMeasurements({ ...measurements, width: e.target.value })}
+                      className="w-full bg-black/50 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      placeholder="e.g. 1.8" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-300 mb-2">Weight (g) — optional</label>
+                    <input type="number" step="0.001" value={measurements.weight}
+                      onChange={(e) => setMeasurements({ ...measurements, weight: e.target.value })}
+                      className="w-full bg-black/50 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      placeholder="e.g. 0.045" />
+                  </div>
+
+                  <button onClick={handlePredict} disabled={loading || modelStatus?.status !== 'ready'}
+                    className="w-full px-4 py-4 bg-biolum-teal hover:bg-cyan-400 text-obsidian-900 font-black tracking-widest uppercase text-xs rounded-2xl disabled:opacity-50 transition-all duration-300 flex items-center justify-center gap-3 shadow-[0_0_20px_rgba(6,182,212,0.2)] hover:shadow-[0_0_40px_rgba(6,182,212,0.4)] mt-6">
+                    {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Predicting...</> : <><Brain className="w-4 h-4" /> Predict Age</>}
+                  </button>
+                </div>
+
+                {error && <div className="mt-4 p-4 bg-red-500/10 border border-red-500/30 rounded-lg"><p className="text-red-400 text-sm">{error}</p></div>}
+              </div>
+
+              {/* Results Panel */}
+              <div className="bg-black/20 backdrop-blur-3xl border border-white/[0.05] border-t-white/[0.1] border-l-white/[0.1] rounded-[3rem] p-10 shadow-2xl relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-biolum-purple/10 rounded-full blur-[100px] pointer-events-none" />
+                <div className="flex items-center gap-3 mb-8 relative z-10">
+                  <CheckCircle className="w-8 h-8 text-biolum-purple" />
+                  <h2 className="text-3xl font-black tracking-tighter text-white">Prediction Results</h2>
+                </div>
+
+                {!prediction ? (
+                  <div className="flex flex-col items-center justify-center h-64 text-gray-500">
+                    <Ruler className="w-16 h-16 mb-4 opacity-30" />
+                    <p>Enter measurements and click Predict</p>
+                  </div>
+                ) : (
+                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+                    <div className="bg-black/20 border border-white/[0.05] rounded-3xl p-8 text-center relative z-10 shadow-inner">
+                      <h3 className="text-xs font-bold tracking-widest uppercase text-gray-500 mb-2">Predicted Fish Age</h3>
+                      <p className="text-7xl font-black tracking-tighter text-white">{prediction.predicted_age}</p>
+                      <p className="text-lg text-biolum-purple font-bold mt-1">years</p>
+                      {prediction.confidence_interval.length === 2 && (
+                        <p className="text-[10px] font-bold tracking-widest uppercase text-gray-500 mt-4">
+                          95% CI: [{prediction.confidence_interval[0]} — {prediction.confidence_interval[1]}] years
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Feature Importance */}
+                    {prediction.feature_importance && Object.keys(prediction.feature_importance).length > 0 && (
+                      <div>
+                        <div className="flex items-center gap-2 mb-3">
+                          <BarChart3 className="w-4 h-4 text-purple-400" />
+                          <h4 className="text-sm font-semibold text-gray-300">Feature Importance</h4>
+                        </div>
+                        <div className="space-y-2">
+                          {Object.entries(prediction.feature_importance)
+                            .sort(([,a], [,b]) => b - a)
+                            .map(([feature, importance]) => (
+                              <div key={feature} className="flex items-center gap-3">
+                                <span className="text-xs text-gray-400 w-20 truncate">{feature}</span>
+                                <div className="flex-1 bg-black/50 rounded-full h-2">
+                                  <div className="bg-gradient-to-r from-purple-500 to-indigo-500 h-2 rounded-full"
+                                    style={{ width: `${importance * 100}%` }} />
+                                </div>
+                                <span className="text-xs text-gray-400 w-12 text-right">{(importance * 100).toFixed(1)}%</span>
+                              </div>
+                            ))}
+                        </div>
+                      </div>
+                    )}
+                  </motion.div>
+                )}
               </div>
             </div>
 
-            {/* Results */}
-            {results.length > 0 && (
-              <div className="mt-10 overflow-x-auto">
-                <h3 className="text-xl font-semibold text-white mb-4">Analysis Results</h3>
-                <table className="min-w-full bg-white/10 text-white border border-white/20 rounded-xl overflow-hidden">
-                  <thead>
-                    <tr className="bg-white/20 text-left">
-                      <th className="p-3">Dataset</th>
-                      <th className="p-3">Type</th>
-                      <th className="p-3">Location</th>
-                      <th className="p-3">Length (mm)</th>
-                      <th className="p-3">Width (mm)</th>
-                      <th className="p-3">Aspect Ratio</th>
-                      <th className="p-3">Circularity</th>
-                      <th className="p-3">Predicted Age (yrs)</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {results.map((r) => (
-                      <tr key={r.id} className="border-t border-white/20 hover:bg-white/5">
-                        <td className="p-3">{r.name}</td>
-                        <td className="p-3">{r.type}</td>
-                        <td className="p-3">{r.location}</td>
-                        <td className="p-3">{r.length}</td>
-                        <td className="p-3">{r.width}</td>
-                        <td className="p-3">{r.aspectRatio}</td>
-                        <td className="p-3">{r.circularity}</td>
-                        <td className="p-3">{r.predictedAge}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+            {/* Batch Analysis */}
+            <div className="bg-black/20 backdrop-blur-3xl border border-white/[0.05] border-t-white/[0.1] border-l-white/[0.1] rounded-[3rem] p-10 shadow-2xl">
+              <div className="flex items-center justify-between mb-10">
+                <div className="flex items-center gap-3">
+                  <Upload className="w-8 h-8 text-biolum-teal" />
+                  <h2 className="text-3xl font-black tracking-tighter text-white">Batch Analysis</h2>
+                </div>
+                <button onClick={handleBatchAnalysis} disabled={batchLoading || modelStatus?.status !== 'ready'}
+                  className="px-8 py-4 bg-biolum-teal hover:bg-cyan-400 text-obsidian-900 font-black tracking-widest uppercase text-xs rounded-2xl disabled:opacity-50 transition-all flex items-center gap-3 shadow-[0_0_20px_rgba(6,182,212,0.2)]">
+                  {batchLoading ? <><Loader2 className="w-4 h-4 animate-spin" /> Analyzing...</> : <><Brain className="w-4 h-4" /> Analyze 20 Samples</>}
+                </button>
               </div>
-            )}
+
+              {batchResults.length > 0 && (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full text-white border border-white/[0.05] rounded-3xl overflow-hidden">
+                    <thead>
+                      <tr className="bg-black/20 text-left border-b border-white/[0.05]">
+                        <th className="p-6 text-xs font-bold tracking-widest uppercase text-gray-500">#</th>
+                        <th className="p-6 text-xs font-bold tracking-widest uppercase text-gray-500">Length (mm)</th>
+                        <th className="p-6 text-xs font-bold tracking-widest uppercase text-gray-500">Width (mm)</th>
+                        <th className="p-6 text-xs font-bold tracking-widest uppercase text-gray-500">Weight (g)</th>
+                        <th className="p-6 text-xs font-bold tracking-widest uppercase text-gray-500">Predicted Age (yrs)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {batchResults.map((r) => (
+                        <tr key={r.id} className="border-t border-white/[0.05] hover:bg-black/20 transition-colors">
+                          <td className="p-6 font-medium">{r.id}</td>
+                          <td className="p-6">{r.length}</td>
+                          <td className="p-6">{r.width}</td>
+                          <td className="p-6">{r.weight}</td>
+                          <td className="p-6 font-black text-biolum-purple">{typeof r.predicted_age === 'number' ? r.predicted_age.toFixed(1) : r.predicted_age}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
           </motion.div>
         </main>
       </div>

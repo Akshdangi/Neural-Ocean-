@@ -1,11 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import Navigation from '../components/layout/Navigation';
 import Sidebar from '../components/layout/Sidebar';
-import { BarChart3, TrendingUp, PieChart, Activity } from 'lucide-react';
+import CyberGrid from '../components/ui/CyberGrid';
+import { BarChart3, TrendingUp, PieChart, Activity, Brain, Loader2 } from 'lucide-react';
 import {
   ResponsiveContainer,
   BarChart,
@@ -20,6 +21,10 @@ import {
   Line,
   Legend
 } from 'recharts';
+import {
+  predictStock, getStockStatus, trainStockModel,
+  type StockPrediction, type ModelStatus
+} from '../services/mlApi';
 
 function Analytics() {
   const navigate = useNavigate();
@@ -31,10 +36,55 @@ function Analytics() {
   });
   const [showAnalytics, setShowAnalytics] = useState(false);
 
+  // Stock prediction state
+  const [stockStatus, setStockStatus] = useState<ModelStatus | null>(null);
+  const [isTrainingStock, setIsTrainingStock] = useState(false);
+  const [stockPrediction, setStockPrediction] = useState<StockPrediction | null>(null);
+  const [stockLoading, setStockLoading] = useState(false);
+  const [stockError, setStockError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!user) {
+      navigate('/login');
+    }
+  }, [user, navigate]);
+
   if (!user) {
-    navigate('/login');
     return null;
   }
+
+  // Fetch stock model status
+  useEffect(() => {
+    getStockStatus().then(setStockStatus).catch(() => {});
+  }, []);
+
+  const handleTrainStock = async () => {
+    setIsTrainingStock(true);
+    setStockError(null);
+    try {
+      await trainStockModel(30);
+      const status = await getStockStatus();
+      setStockStatus(status);
+    } catch (err: any) {
+      setStockError(err.message);
+    } finally {
+      setIsTrainingStock(false);
+    }
+  };
+
+  const handlePredictStock = async () => {
+    setStockLoading(true);
+    setStockPrediction(null);
+    setStockError(null);
+    try {
+      const result = await predictStock(12, 'Atlantic Ocean');
+      setStockPrediction(result);
+    } catch (err: any) {
+      setStockError(err.message);
+    } finally {
+      setStockLoading(false);
+    }
+  };
 
   const handleLogout = () => {
     logout();
@@ -92,15 +142,17 @@ function Analytics() {
   const COLORS = ['#06b6d4', '#3b82f6', '#f59e0b', '#ef4444'];
 
   return (
-    <div className="min-h-screen">
-      <Navigation onLogout={handleLogout} />
-      
-      <div className="flex">
-        <Sidebar 
-          filters={filters} 
-          onFiltersChange={setFilters}
-          onExport={handleExport}
-        />
+    <div className="min-h-screen relative bg-[linear-gradient(180deg,#0f172a_0%,#1e3a8a_50%,#020617_100%)] selection:bg-cyan-500/30 selection:text-cyan-300">
+      <CyberGrid />
+      <div className="relative z-10">
+        <Navigation onLogout={handleLogout} />
+        
+        <div className="flex">
+          <Sidebar 
+            filters={filters} 
+            onFiltersChange={setFilters}
+            onExport={handleExport}
+          />
         
         <main className="flex-1 p-8">
           <motion.div
@@ -108,8 +160,8 @@ function Analytics() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <h1 className="text-4xl font-bold text-white mb-2">Advanced Analytics</h1>
-            <p className="text-gray-400 mb-8">Deep insights and predictive models for marine data</p>
+            <h1 className="text-5xl font-black tracking-tighter text-white mb-2">Deep Analytics</h1>
+            <p className="text-gray-400 mb-10 text-sm uppercase tracking-widest font-bold">Predictive models and avant-garde marine insights</p>
 
             {/* Cards */}
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -124,28 +176,29 @@ function Analytics() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1, duration: 0.5 }}
-                  className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl p-6 text-center"
+                  className="bg-black/20 backdrop-blur-3xl border border-white/[0.05] border-t-white/[0.1] border-l-white/[0.1] rounded-3xl p-6 text-center shadow-2xl hover:-translate-y-1 hover:bg-black/40 transition-all duration-500 group"
                 >
-                  <div className="text-cyan-400 mb-4 flex justify-center">{item.icon}</div>
-                  <h3 className="text-white font-semibold mb-2">{item.title}</h3>
-                  <p className="text-gray-400">{item.count}</p>
+                  <div className="text-biolum-teal mb-4 flex justify-center group-hover:scale-110 transition-transform duration-500">{item.icon}</div>
+                  <h3 className="text-white font-bold tracking-tight mb-2">{item.title}</h3>
+                  <p className="text-gray-500 text-xs font-bold tracking-widest uppercase">{item.count}</p>
                 </motion.div>
               ))}
             </div>
 
             {/* Launch Button */}
-            <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl p-8 text-center mb-8">
-              <BarChart3 className="w-16 h-16 text-cyan-400 mx-auto mb-4" />
-              <h2 className="text-2xl font-bold text-white mb-4">Advanced Analytics Dashboard</h2>
-              <p className="text-gray-300 mb-6">
+            <div className="bg-black/20 backdrop-blur-3xl border border-white/[0.05] border-t-white/[0.1] border-l-white/[0.1] rounded-[3rem] p-12 text-center mb-8 shadow-2xl overflow-hidden relative">
+              <div className="absolute inset-0 bg-gradient-to-br from-biolum-teal/5 to-biolum-purple/5 opacity-50" />
+              <BarChart3 className="w-20 h-20 text-biolum-teal mx-auto mb-6 relative z-10" />
+              <h2 className="text-3xl font-black tracking-tighter text-white mb-4 relative z-10">Advanced Analytics Dashboard</h2>
+              <p className="text-gray-400 mb-10 max-w-2xl mx-auto font-light relative z-10">
                 Comprehensive analytics tools for marine data analysis, including predictive modeling, 
                 statistical analysis, and trend forecasting capabilities.
               </p>
               <button
                 onClick={() => setShowAnalytics(!showAnalytics)}
-                className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300"
+                className="relative z-10 bg-white text-obsidian-900 hover:bg-biolum-teal hover:text-white px-8 py-4 rounded-full font-black tracking-widest uppercase text-sm transition-all duration-500 hover:scale-[1.02]"
               >
-                {showAnalytics ? 'Hide Analytics Suite' : 'Launch Analytics Suite'}
+                {showAnalytics ? 'Collapse Suite' : 'Initialize Suite'}
               </button>
             </div>
 
@@ -157,8 +210,7 @@ function Analytics() {
                 transition={{ duration: 0.6 }}
               >
                 <div className="grid md:grid-cols-2 gap-8 mb-8">
-                  {/* Dataset Type Distribution */}
-                  <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl p-6">
+                  <div className="bg-black/20 backdrop-blur-3xl border border-white/[0.05] border-t-white/[0.1] border-l-white/[0.1] rounded-3xl p-8 shadow-2xl">
                     <h3 className="text-lg font-semibold text-white mb-4">Dataset Type Distribution</h3>
                     <ResponsiveContainer width="100%" height={300}>
                       <RePieChart>
@@ -179,8 +231,7 @@ function Analytics() {
                     </ResponsiveContainer>
                   </div>
 
-                  {/* Records Over Time */}
-                  <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl p-6">
+                  <div className="bg-black/20 backdrop-blur-3xl border border-white/[0.05] border-t-white/[0.1] border-l-white/[0.1] rounded-3xl p-8 shadow-2xl">
                     <h3 className="text-lg font-semibold text-white mb-4">Records Over Time</h3>
                     <ResponsiveContainer width="100%" height={300}>
                       <LineChart data={recordsOverTime}>
@@ -194,8 +245,7 @@ function Analytics() {
                   </div>
                 </div>
 
-                {/* Dataset Status */}
-                <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl p-6">
+                <div className="bg-black/20 backdrop-blur-3xl border border-white/[0.05] border-t-white/[0.1] border-l-white/[0.1] rounded-3xl p-8 shadow-2xl">
                   <h3 className="text-lg font-semibold text-white mb-4">Dataset Status Distribution</h3>
                   <ResponsiveContainer width="100%" height={300}>
                     <BarChart data={statusDistribution}>
@@ -208,8 +258,66 @@ function Analytics() {
                 </div>
               </motion.div>
             )}
-          </motion.div>
-        </main>
+
+            {/* Fish Stock Prediction Section */}
+            <div className="bg-black/20 backdrop-blur-3xl border border-white/[0.05] border-t-white/[0.1] border-l-white/[0.1] rounded-[3rem] p-10 mt-8 shadow-2xl relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-biolum-emerald/10 rounded-full blur-[100px] pointer-events-none" />
+              <div className="flex items-center justify-between mb-8 relative z-10">
+                <div>
+                  <div className="flex items-center gap-3 mb-2">
+                    <TrendingUp className="w-8 h-8 text-biolum-emerald" />
+                    <h2 className="text-3xl font-black tracking-tighter text-white">Fish Stock Prediction</h2>
+                  </div>
+                  <p className="text-gray-400 text-sm font-bold tracking-widest uppercase">LSTM Neural Network Forecast</p>
+                </div>
+                <span className={`text-xs px-4 py-2 rounded-full font-black tracking-widest uppercase border ${
+                  stockStatus?.status === 'ready' ? 'bg-biolum-emerald/10 text-biolum-emerald border-biolum-emerald/30' : 'bg-black/40 text-gray-500 border-white/[0.1]'
+                }`}>
+                  {stockStatus?.status === 'ready' ? '✓ Model Ready' : '○ Not Trained'}
+                </span>
+              </div>
+
+              <div className="flex gap-4 mb-8 relative z-10">
+                {stockStatus?.status !== 'ready' && (
+                  <button onClick={handleTrainStock} disabled={isTrainingStock}
+                    className="px-8 py-4 bg-black/40 hover:bg-white/[0.1] border border-white/[0.1] text-white font-black tracking-widest uppercase text-xs rounded-2xl disabled:opacity-50 flex items-center gap-3 transition-all">
+                    {isTrainingStock ? <><Loader2 className="w-4 h-4 animate-spin" /> Training...</> : <><Brain className="w-4 h-4 text-biolum-emerald" /> Train Stock Model</>}
+                  </button>
+                )}
+                <button onClick={handlePredictStock} disabled={stockLoading || stockStatus?.status !== 'ready'}
+                  className="px-8 py-4 bg-biolum-emerald hover:bg-emerald-400 text-obsidian-900 font-black tracking-widest uppercase text-xs rounded-2xl disabled:opacity-50 transition-all flex items-center gap-3 shadow-[0_0_20px_rgba(16,185,129,0.2)] hover:shadow-[0_0_40px_rgba(16,185,129,0.4)]">
+                  {stockLoading ? <><Loader2 className="w-4 h-4 animate-spin" /> Forecasting...</> : <><TrendingUp className="w-4 h-4" /> Forecast 12 Months</>}
+                </button>
+              </div>
+
+              {stockError && (
+                <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg mb-4">
+                  <p className="text-red-400 text-sm">{stockError}</p>
+                </div>
+              )}
+
+              {stockPrediction && stockPrediction.forecast.length > 0 && (
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+                  <div className="mb-4">
+                    <ResponsiveContainer width="100%" height={350}>
+                      <LineChart data={stockPrediction.forecast}>
+                        <XAxis dataKey="date" tick={{ fill: '#9ca3af', fontSize: 11 }} />
+                        <YAxis tick={{ fill: '#9ca3af', fontSize: 11 }} />
+                        <Tooltip contentStyle={{ backgroundColor: '#1e293b', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', color: '#fff' }} />
+                        <Legend />
+                        <Line type="monotone" dataKey="upper_bound" stroke="#06b6d455" strokeDasharray="5 5" name="Upper CI" dot={false} />
+                        <Line type="monotone" dataKey="value" stroke="#06b6d4" strokeWidth={3} name="Forecast" dot={{ r: 4, fill: '#06b6d4' }} />
+                        <Line type="monotone" dataKey="lower_bound" stroke="#06b6d455" strokeDasharray="5 5" name="Lower CI" dot={false} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <p className="text-xs text-gray-500 text-center">Region: {stockPrediction.region} | 12-month forecast with 95% confidence intervals</p>
+                </motion.div>
+              )}
+            </div>
+            </motion.div>
+          </main>
+        </div>
       </div>
     </div>
   );
