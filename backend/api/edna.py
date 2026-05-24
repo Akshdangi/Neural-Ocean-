@@ -1,11 +1,12 @@
 """eDNA classification API endpoints."""
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, BackgroundTasks
 from schemas.models import TrainResponse, ModelStatus, EDNAPrediction, EDNAInput
 import logging
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/edna", tags=["eDNA Classification"])
 
+# Service instance — set by main.py
 service = None
 
 
@@ -15,19 +16,19 @@ def set_service(svc):
 
 
 @router.post("/train", response_model=TrainResponse)
-async def train_model():
-    """Train the eDNA classification model."""
-    try:
-        metrics = service.train()
-        return TrainResponse(
-            status="success",
-            message="eDNA model trained successfully",
-            metrics=metrics,
-            training_time_seconds=metrics.get("training_time_seconds", 0)
-        )
-    except Exception as e:
-        logger.error(f"Training failed: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+async def train_model(background_tasks: BackgroundTasks):
+    """Train the eDNA classification model in the background."""
+    if service.status == "training":
+        raise HTTPException(status_code=400, detail="Model is already training.")
+    
+    background_tasks.add_task(service.train)
+    
+    return TrainResponse(
+        status="success",
+        message="eDNA model training started in background",
+        metrics={},
+        training_time_seconds=0.0
+    )
 
 
 @router.post("/predict", response_model=EDNAPrediction)
