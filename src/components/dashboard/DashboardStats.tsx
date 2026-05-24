@@ -70,23 +70,29 @@ function DashboardStats({ }: StatsProps) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: index * 0.1, duration: 0.5 }}
-          className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl p-6 hover:bg-white/15 transition-all duration-300"
+          className="group relative"
         >
-          <div className="flex items-center justify-between mb-4">
-            <div className={`bg-gradient-to-r ${stat.gradient} p-3 rounded-lg`}>
-              {stat.icon}
+          <div className="absolute inset-0 bg-gradient-to-r from-white/5 to-white/10 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-300" />
+          <div className="relative overflow-hidden bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl border border-white/20 rounded-2xl p-7 hover:from-white/15 hover:to-white/10 hover:border-white/40 transition-all duration-300 h-full group-hover:shadow-2xl group-hover:shadow-white/10">
+            <div className="flex items-center justify-between mb-6">
+              <div className={`bg-gradient-to-r ${stat.gradient} p-3 rounded-xl shadow-lg transform group-hover:scale-110 transition-transform duration-300`}>
+                <div className="text-white">{stat.icon}</div>
+              </div>
+              <div className={`flex items-center space-x-1 px-3 py-1 rounded-full text-sm font-bold ${
+                stat.trend === 'up' 
+                  ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
+                  : 'bg-red-500/20 text-red-400 border border-red-500/30'
+              }`}>
+                <span>{stat.change}</span>
+                <TrendingUp className={`w-4 h-4 ${
+                  stat.trend === 'down' ? 'rotate-180' : ''
+                }`} />
+              </div>
             </div>
-            <div className={`flex items-center space-x-1 text-sm font-medium ${
-              stat.trend === 'up' ? 'text-green-400' : 'text-red-400'
-            }`}>
-              <span>{stat.change}</span>
-              <TrendingUp className={`w-4 h-4 ${
-                stat.trend === 'down' ? 'rotate-180' : ''
-              }`} />
-            </div>
+            <h3 className="text-3xl font-black text-white mb-2">{stat.value}</h3>
+            <p className="text-gray-400 text-sm font-medium">{stat.title}</p>
+            <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-white/10 to-transparent rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           </div>
-          <h3 className="text-2xl font-bold text-white mb-1">{stat.value}</h3>
-          <p className="text-gray-400">{stat.title}</p>
         </motion.div>
       ))}
     </div>

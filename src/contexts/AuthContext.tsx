@@ -11,6 +11,7 @@ interface User {
 interface AuthContextType {
   user: User | null;
   login: (email: string, password: string, role: string) => Promise<boolean>;
+  loginWithGoogle: () => Promise<boolean>;
   logout: () => void;
   isLoading: boolean;
 }
@@ -59,13 +60,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const loginWithGoogle = async (): Promise<boolean> => {
+    try {
+      // Mock Google authentication
+      const mockUser: User = {
+        id: Date.now().toString(),
+        email: 'user@gmail.com',
+        role: 'researcher',
+        name: 'Google User'
+      };
+      
+      setUser(mockUser);
+      localStorage.setItem('neural-ocean-user', JSON.stringify(mockUser));
+      return true;
+    } catch (error) {
+      console.error('Google login error:', error);
+      return false;
+    }
+  };
+
   const logout = () => {
     setUser(null);
     localStorage.removeItem('neural-ocean-user');
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, isLoading }}>
+    <AuthContext.Provider value={{ user, login, loginWithGoogle, logout, isLoading }}>
       {children}
     </AuthContext.Provider>
   );
